@@ -5,7 +5,8 @@ export type ContractCategory =
   | 'intellectual_property' 
   | 'payment_terms' 
   | 'scope_creep' 
-  | 'termination_covenants';
+  | 'termination_covenants'
+  | 'jurisdiction_compliance';
 
 export interface ContractFinding {
   id: string;
@@ -16,6 +17,7 @@ export interface ContractFinding {
   snippet: string;
   explanation: string;
   recommendation: string;
+  highlightPhrase?: string;
 }
 
 export interface ContractAuditResult {

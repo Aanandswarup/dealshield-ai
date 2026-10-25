@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Navbar } from './components/Navbar';
 import { ContractInput } from './components/ContractInput';
 import { ScoreDashboard } from './components/ScoreDashboard';
@@ -15,18 +15,12 @@ import confetti from 'canvas-confetti';
 
 export function App() {
   const [contractText, setContractText] = useState<string>(SAMPLE_CONTRACTS[0].text);
-  const [result, setResult] = useState<ContractAuditResult | null>(null);
-  const [credits, setCredits] = useState<UserCredits>(CreditManager.getCredits());
+  const [result, setResult] = useState<ContractAuditResult>(() => RiskEngine.auditContract(SAMPLE_CONTRACTS[0].text));
+  const [credits, setCredits] = useState<UserCredits>(() => CreditManager.getCredits());
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isUpgradeOpen, setIsUpgradeOpen] = useState<boolean>(false);
   const [isEmailOpen, setIsEmailOpen] = useState<boolean>(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
-
-  // Initial scan on load with sample contract
-  useEffect(() => {
-    const initialResult = RiskEngine.auditContract(SAMPLE_CONTRACTS[0].text);
-    setResult(initialResult);
-  }, []);
 
   const showToast = (msg: string) => {
     setToastMsg(msg);
@@ -187,7 +181,7 @@ export function App() {
                 </div>
               </div>
 
-              <RedlineViewer findings={result.findings} />
+              <RedlineViewer findings={result.findings} contractText={contractText} />
             </div>
           </div>
         )}
