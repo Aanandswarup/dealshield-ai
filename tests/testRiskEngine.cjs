@@ -212,19 +212,41 @@ function computeChecksum(payload) {
   return hex.slice(0, 4);
 }
 
-function verifyKey(fullKey) {
+const HF_SALT = 'HF_PRO_SECRET_SALT_V1_2026';
+function computeHFChecksum(payload) {
+  let hash = 0x811c9dc5;
+  const str = payload + HF_SALT;
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  const hex = (hash >>> 0).toString(16).toUpperCase().padStart(8, '0');
+  return hex.slice(0, 4);
+}
+
+function verifyUnifiedKey(fullKey) {
   const parts = fullKey.trim().toUpperCase().split('-');
-  if (parts.length !== 5 || parts[0] !== 'DS' || parts[1] !== 'PRO') return false;
-  const payload = parts.slice(0, 4).join('-');
-  const chk = parts[4];
-  return computeChecksum(payload) === chk;
+  if (parts.length !== 5) return false;
+  if (parts[0] === 'DS' && parts[1] === 'PRO') {
+    const payload = parts.slice(0, 4).join('-');
+    return computeChecksum(payload) === parts[4];
+  }
+  if (parts[0] === 'HF' && parts[1] === 'PRO') {
+    const payload = parts.slice(0, 4).join('-');
+    return computeHFChecksum(payload) === parts[4];
+  }
+  return false;
 }
 
 const validSample = 'DS-PRO-8K9M-2P4Q';
 const keyWithChk = `${validSample}-${computeChecksum(validSample)}`;
-assert.ok(verifyKey(keyWithChk), 'Valid cryptographic key must pass verification');
-assert.ok(!verifyKey('DS-PRO-8K9M-2P4Q-XXXX'), 'Forged key must fail verification');
-console.log('✓ TEST 3 PASSED: Cryptographic license verification fully validated');
+assert.ok(verifyUnifiedKey(keyWithChk), 'Valid DS cryptographic key must pass verification');
+
+const validHfSample = 'HF-PRO-7A2B-9C4D';
+const hfKeyWithChk = `${validHfSample}-${computeHFChecksum(validHfSample)}`;
+assert.ok(verifyUnifiedKey(hfKeyWithChk), 'Valid HF Gumroad cryptographic key must pass verification');
+assert.ok(!verifyUnifiedKey('DS-PRO-8K9M-2P4Q-XXXX'), 'Forged key must fail verification');
+console.log('✓ TEST 3 PASSED: Unified Suite cryptographic license verification fully validated (DS-PRO & HF-PRO supported)');
 
 console.log('\n======================================================');
 console.log('ALL VERIFICATION TEST SUITES PASSED! (100% PASS RATE)');

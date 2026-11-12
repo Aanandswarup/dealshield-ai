@@ -28,7 +28,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose, onS
     }
   };
 
-  const CHECKOUT_URL = 'https://caanand7.gumroad.com/l/dealshield/EARLYBIRD';
+  const CHECKOUT_URL = 'https://caanand7.gumroad.com/l/hookforge/EARLYBIRD';
 
   return (
     <div 
@@ -88,7 +88,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ isOpen, onClose, onS
             <div className="w-4 h-4 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0 mt-0.5">
               <Check className="w-3 h-3 text-amber-400" />
             </div>
-            <span><strong className="text-amber-300 font-semibold">🎁 Bonus Pack:</strong> 3 Bulletproof Freelance Contract Templates (MSA, SOW, NDA)</span>
+            <span><strong className="text-amber-300 font-semibold">🎁 Creator Suite Bonus:</strong> License key also unlocks HookForge AI Pro + 100+ Viral Hooks Vault</span>
           </div>
         </div>
 

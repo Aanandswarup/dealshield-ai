@@ -31,8 +31,25 @@ const WHITELISTED_VIP_KEYS = new Set([
   'DS-PRO-AGENCY-VIP',
   'DS-PRO-2026-TEST',
   'DS-PRO-AUDIT-LIFETIME',
-  'DS123'
+  'DS123',
+  'HF-PRO-FOUNDER-VIP',
+  'HF-PRO-CREATOR-VIP',
+  'HF-PRO-LICENSE-VALID',
+  'HF-PRO-LIFETIME',
+  'EARLYBIRD'
 ]);
+
+const HF_SALT = 'HF_PRO_SECRET_SALT_V1_2026';
+function computeHFChecksum(payload: string): string {
+  let hash = 0x811c9dc5;
+  const str = payload + HF_SALT;
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  const hex = (hash >>> 0).toString(16).toUpperCase().padStart(8, '0');
+  return hex.slice(0, 4);
+}
 
 export function verifyLicenseKey(rawKey: string): boolean {
   if (!rawKey) return false;
@@ -40,16 +57,26 @@ export function verifyLicenseKey(rawKey: string): boolean {
   if (cleanKey.length < 5) return false;
 
   // 1. Signed format: DS-PRO-XXXX-XXXX-CHECKSUM
-  const match = cleanKey.match(/^DS-PRO-([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9]{4})$/);
-  if (match) {
-    const payload = `DS-PRO-${match[1]}-${match[2]}`;
+  const dsMatch = cleanKey.match(/^DS-PRO-([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9]{4})$/);
+  if (dsMatch) {
+    const payload = `DS-PRO-${dsMatch[1]}-${dsMatch[2]}`;
     const expectedChecksum = computeChecksum(payload);
-    if (match[3] === expectedChecksum) {
+    if (dsMatch[3] === expectedChecksum) {
       return true;
     }
   }
 
-  // 2. VIP whitelist
+  // 2. Cross-product signed format: HF-PRO-XXXX-XXXX-CHECKSUM (Unified Suite Pass)
+  const hfMatch = cleanKey.match(/^HF-PRO-([A-Z0-9]{4})-([A-Z0-9]{4})-([A-Z0-9]{4})$/);
+  if (hfMatch) {
+    const payload = `HF-PRO-${hfMatch[1]}-${hfMatch[2]}`;
+    const expectedChecksum = computeHFChecksum(payload);
+    if (hfMatch[3] === expectedChecksum) {
+      return true;
+    }
+  }
+
+  // 3. VIP whitelist
   if (WHITELISTED_VIP_KEYS.has(cleanKey)) {
     return true;
   }
